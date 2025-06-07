@@ -11,10 +11,21 @@ from rich.align import Align
 from rich.live import Live
 from rich.text import Text
 import readchar
+from google import genai
 
 # Load environment variables from .env file
 dotenv.load_dotenv()
 
+def get_gemini_response(api_key: str, prompt: str) -> str:
+    """Fetches a response from Google Gemini AI."""
+    client = genai.Client(api_key=api_key)
+    
+    response = client.models.generate_content(contents=prompt, model="gemini-2.0-flash")
+    
+    if response and response.text:
+        return response.text
+    else:
+        return "No response from Gemini AI."
 
 class Clock:
     """Renders the time in the center of the screen."""
@@ -70,16 +81,13 @@ def cli():
 @click.argument('city')
 @click.option('--api-key', default=os.getenv('API_KEY'), help='Your OpenWeather API key')
 def weather(city:str, api_key:str) -> dict:
-    
+    """Fetches and displays weather and air quality data for a given city."""
+
+    click.echo(f"Fetching weather data for {city.title()}...")
+
     # get data
     weather_data = get_weather_data(city, api_key)
     air_quality_data = get_air_quality(city, api_key)
-    print(air_quality_data)
-
-
-    # print weather data 
-
-    console = Console()
 
     # layoout
     layout = Layout()
@@ -91,8 +99,8 @@ def weather(city:str, api_key:str) -> dict:
         Layout(name="exit", size=1)
     )
 
-    layout["main"].split_row(Layout(name="side"), Layout(name="Character", ratio=2))
-    layout["side"].split(Layout(name="weather"), Layout(name="other"))
+    layout["main"].split_row(Layout(name="side"), Layout(name="weather_report", ratio=2))
+    layout["side"].split(Layout(name="weather"), Layout(name="forecast"))
     
     # layout content
     layout["header"].update(Clock())
@@ -118,18 +126,27 @@ def weather(city:str, api_key:str) -> dict:
         f"  - PM10: {air_quality_data['list'][0]['components']['pm10']} µg/m³\n"
     )
 
+    prompt = f"The time is {datetime.now()}. You are a weather reporter in the city of {city.title()}. You are tasked with giving a weather update based on the following data:\n\n {weather_info}\n\n Please provide a concise update and include any relevant details about the weather, air quality, and any other important information that a resident of {city.title()} should know. Most important please indicate what a resident can wear today based on the weather and include accessories i.e. umbrella, sunglasses, etc. Can you also add a fun fact about the city of {city.title()}? can you also draw a ascii art of the current weather condition."
+    
+    click.echo(f"Fetching weather report from Gemini AI for {city.title()}...")
+    weather_report = get_gemini_response(api_key=os.getenv('GEMINI_API_KEY'), prompt=prompt)
+
     # Create a panel for the weather information
     weather_panel = Panel(weather_info, title=f"Weather in {city.title()}", style="blue")
+    weather_report_panel = Panel(weather_report, title="Weather Report", style="green")
     
 
     layout["weather"].update(weather_panel)
+    layout["weather_report"].update(weather_report_panel)
     layout["exit"].update(Align.left(Text("Press 'q' to exit", style="bold red")))
-    
+   
+
     # rendering
     with Live(layout, screen=True, redirect_stderr=False) as live:
         try:
             while True:
                 if readchar.readkey() == "q":
+                    click.echo("Bye! Have a great day...")
                     break
                 sleep(1)
         except KeyboardInterrupt:
