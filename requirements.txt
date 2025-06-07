@@ -1,0 +1,6 @@
+click
+requests
+python-dotenv
+rich
+readchar
+google-generativeai

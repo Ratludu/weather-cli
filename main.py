@@ -126,7 +126,7 @@ def weather(city:str, api_key:str) -> dict:
         f"  - PM10: {air_quality_data['list'][0]['components']['pm10']} µg/m³\n"
     )
 
-    prompt = f"The time is {datetime.now()}. You are a weather reporter in the city of {city.title()}. You are tasked with giving a weather update based on the following data:\n\n {weather_info}\n\n Please provide a concise update and include any relevant details about the weather, air quality, and any other important information that a resident of {city.title()} should know. Most important please indicate what a resident can wear today based on the weather and include accessories i.e. umbrella, sunglasses, etc. Can you also add a fun fact about the city of {city.title()}? can you also draw a ascii art of the current weather condition."
+    prompt = f"The time is {datetime.now()}. You are a weather reporter in the city of {city.title()}. You are tasked with giving a weather update based on the following data:\n\n {weather_info}\n\n Please provide a concise update and include any relevant details about the weather, air quality, and any other important information that a resident of {city.title()} should know. Most important please indicate what a resident can wear today based on the weather and include accessories i.e. umbrella, sunglasses, etc. Notes on formatting: please use [bold]word[/bold] for bold text, and [italic]word[/italic] for italic text. Do not use any other formatting. Do not use any markdown formatting. Do not use any code blocks. Do not use any emojis. Do not use any bullet points. Do not use any lists."
     
     click.echo(f"Fetching weather report from Gemini AI for {city.title()}...")
     weather_report = get_gemini_response(api_key=os.getenv('GEMINI_API_KEY'), prompt=prompt)
