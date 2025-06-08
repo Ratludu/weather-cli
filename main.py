@@ -12,6 +12,7 @@ from rich.live import Live
 from rich.text import Text
 import readchar
 from google import genai
+from charts import Charts
 
 # Load environment variables from .env file
 dotenv.load_dotenv()
@@ -213,16 +214,21 @@ def weather(city:str, api_key:str) -> dict:
     with console.status(f"Fetching weather report from Gemini AI for {city.title()}...", spinner="dots"):
         weather_report = get_gemini_response(api_key=os.getenv('GEMINI_API_KEY'), prompt=prompt)
 
+    # Charts
+    temp_bar = Charts({"mon": 1, "tue":2, "wed":3,"thu":4,"fri":4,"sat":2,"sun":1})
+
     # Create a panel for the weather information
     header_panel = Panel(Clock(),style="blue")
     weather_panel = Panel(weather_info, title=f"Weather in {city.title()}", style="blue")
     weather_report_panel = Panel(Text(weather_report, style="green"), title="Weather Report", style="blue")
     air_quality_panel = Panel(air_quality_info, title="Current Air Quality", style="blue")
-    
+    forecast_panel = Panel(temp_bar.bar(), title="Weekly Forecast", style="magenta")
+
     layout["header"].update(header_panel)
     layout["weather"].update(weather_panel)
     layout["weather_report"].update(weather_report_panel)
     layout["air_quality"].update(air_quality_panel)
+    layout["forecast"].update(forecast_panel)
     layout["exit"].update(Align.left(Text("Press 'q' to exit", style="orange")))
    
 
