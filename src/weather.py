@@ -44,11 +44,11 @@ def get_air_quality(city: str, api_key:str) -> dict:
     return response.json()
 
 def get_daily_forecast(city:str, api_key:str, number_of_days:int = 5) -> dict:
-    """Fetches the forecasted weather for the next 16 days""" 
+    """Fetches the forecasted weather for the next 5 days""" 
 
     geocode_data = geocode(city, api_key) 
 
-    url= f"http://api.openweathermap.org/data/2.5/forecast?lat={geocode_data[0]['lat']}&lon={geocode_data[0]['lon']}&appid={api_key}"
+    url= f"http://api.openweathermap.org/data/2.5/forecast?lat={geocode_data[0]['lat']}&lon={geocode_data[0]['lon']}&&appid={api_key}"
 
     response = requests.get(url) 
 
