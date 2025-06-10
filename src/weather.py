@@ -1,5 +1,9 @@
 import requests 
 import click 
+import dotenv
+import os
+
+dotenv.load_dotenv()
 
 def geocode(city: str, api_key: str) -> dict:
     """Fetches geocode data for a given city using OpenWeather API."""
@@ -39,6 +43,28 @@ def get_air_quality(city: str, api_key:str) -> dict:
         return {}
     return response.json()
 
-def get_daily_forecast(city:str, api_key:str) -> dict:
+def get_daily_forecast(city:str, api_key:str, number_of_days:int = 5) -> dict:
+    """Fetches the forecasted weather for the next 16 days""" 
 
-    pass
+    geocode_data = geocode(city, api_key) 
+
+    url= f"http://api.openweathermap.org/data/2.5/forecast?lat={geocode_data[0]['lat']}&lon={geocode_data[0]['lon']}&appid={api_key}"
+
+    response = requests.get(url) 
+
+    if response.status_code != 200:
+        click.echo(f"Error fetching forecast data: {response.status_code}") 
+        return {} 
+
+    return response.json()
+
+        
+if __name__ == "__main__":
+
+    API = os.getenv("API_KEY")
+
+    response = get_daily_forecast("canberra", API)
+
+    print(response)
+
+ 
